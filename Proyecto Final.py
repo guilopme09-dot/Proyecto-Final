@@ -1,11 +1,18 @@
 from flask import Flask,request,jsonify
 from pymongo import MongoClient
 from flask_cors import CORS
+import os
 
 chivistas=Flask("Finanzas App")
 CORS(chivistas)
 
-cliente=MongoClient("mongodb://localhost:27017/")
+cliente=MongoClient(
+    os.getenv(
+        "MONGODB_URI",
+        "mongodb+srv://IvanMontes:010309@cluster0.kltb6j0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+    )
+)
+
 db=cliente["finanzas"]
 
 usuarios=db["usuarios"]
@@ -15,7 +22,6 @@ gastos=db["gastos"]
 @chivistas.route("/")
 def inicio():
     return "Servidor funcionando"
-
 
 @chivistas.route("/usuarios",methods=["GET"])
 def obtener_usuarios():
@@ -75,8 +81,6 @@ def actualizar_usuario(nombre):
         "mensaje":"Usuario actualizado"
     })
 
-
-
 @chivistas.route("/categorias",methods=["GET"])
 def obtener_categorias():
 
@@ -112,7 +116,6 @@ def actualizar_categoria(nombre):
 
     datos=request.json
 
- 
     categorias.update_one(
         {"nombre":nombre},
         {"$set":{
@@ -135,7 +138,6 @@ def eliminar_categoria(nombre):
         "mensaje":"Categoria eliminada"
     })
 
-
 @chivistas.route("/gastos",methods=["GET"])
 def obtener_gastos():
 
@@ -150,7 +152,6 @@ def obtener_gastos():
             "fecha":gasto["fecha"]
         })
 
- 
     return jsonify(lista)
 
 @chivistas.route("/gastos",methods=["POST"])
@@ -200,8 +201,9 @@ def eliminar_gasto(titulo):
         "mensaje":"Gasto eliminado"
     })
 
-chivistas.run(
-    host="0.0.0.0",
-    port=5000,
-    debug=True
-)
+if __name__=="__main__":
+    chivistas.run(
+        host="0.0.0.0",
+        port=5000,
+        debug=True
+    )
